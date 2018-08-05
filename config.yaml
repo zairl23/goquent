@@ -1,0 +1,10 @@
+db:
+  name: db_model
+  addr: 127.0.0.1:3306
+  username: root
+  password: root
+reader_db:
+  name: db_model
+  addr: 127.0.0.1:3306
+  username: root
+  password: root
