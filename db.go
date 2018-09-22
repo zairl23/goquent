@@ -112,3 +112,49 @@ func (d *Database) First(model interface{}, where string) error {
 func (d *Database) UpdateOrCreate(model interface{}, where interface{}) error {
 	return DB.Writer.Where(where).Assign(model).FirstOrCreate(model).Error
 }
+
+func (d *Database) Count(model interface{}, where string) uint64 {
+	var total uint64
+	var err error 
+	
+	if where != "" {
+		err = DB.Reader.Model(model).Where(where).Count(&total).Error
+	} else {
+		err = DB.Reader.Model(model).Count(&total).Error
+	}
+	
+
+	if err != nil {
+		total = 0
+	}
+
+	return total
+}
+
+type PaginateQuery struct {
+	Model interface{}
+	Result interface{}
+	Limit uint64
+	Page uint64
+	Where string
+	Fields string
+	Order string
+}
+
+// result := make([]model, 0)
+func (d *Database) Paginate(query PaginateQuery) (uint64, error) {
+	var total uint64
+	var err error
+	total = 0
+	offset := (query.Limit) * (query.Page - 1)
+
+	if query.Where != "" {
+		err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Count(&total).Error
+		err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Limit(query.Limit).Offset(offset).Order(query.Order).Find(query.Result).Error
+	} else {
+		err = DB.Reader.Model(query.Model).Select(query.Fields).Count(&total).Error
+		err = DB.Reader.Model(query.Model).Select(query.Fields).Limit(query.Limit).Offset(offset).Order(query.Order).Find(query.Result).Error
+	}
+	
+	return total, err
+}

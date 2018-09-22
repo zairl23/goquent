@@ -147,6 +147,12 @@
 			"revisionTime": "2018-06-28T09:55:33Z"
 		},
 		{
+			"checksumSHA1": "Zm4khIVzt6NYSAU0Pqlx7G1TGCk=",
+			"path": "github.com/zairl23/config",
+			"revision": "60a3a96630207336e0b36f6167bf416b76b6a1dc",
+			"revisionTime": "2018-08-21T04:58:26Z"
+		},
+		{
 			"path": "golang.org/x/sys/unix",
 			"revision": ""
 		},

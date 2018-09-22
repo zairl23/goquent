@@ -86,4 +86,31 @@ func TestOne(t *testing.T) {
 	
 	fmt.Println(*c)
 
+	// Count
+	total := DB.Count(Product{}, "")
+
+	fmt.Println(total)
+
+	// Paginate
+	products := make([]Product, 0)
+	query := PaginateQuery{
+		Model: Product{},
+		Result: &products,
+		Limit: 10,
+		Page: 1,
+		Where: "",
+		Fields: "*",
+		Order: "created_at desc",
+	}
+
+	totals, err := DB.Paginate(query)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(products)
+
+	fmt.Println(totals)
+
 }
