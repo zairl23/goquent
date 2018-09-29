@@ -10,6 +10,6 @@ type Product struct {
 	Price uint
 }
 
-func (Product) TableName() string {
+func (p *Product) TableName() string {
 	return "products"
 }
