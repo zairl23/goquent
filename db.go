@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/spf13/viper"
 	// MySQL driver.
 	"github.com/jinzhu/gorm"
 	"github.com/zairl23/config"
@@ -30,7 +29,7 @@ func openDB(username, password, addr, name string) *gorm.DB {
 
 	db, err := gorm.Open("mysql", config)
 	if err != nil {
-		log.Fatalln("atabase connection failed")
+		log.Fatalln("database connection failed")
 		// fmt.Printf("Database connection failed. Database name: %s", name)
 	}
 
@@ -41,7 +40,7 @@ func openDB(username, password, addr, name string) *gorm.DB {
 }
 
 func setupDB(db *gorm.DB) {
-	db.LogMode(viper.GetBool("gormlog"))
+	db.LogMode(config.GetBool("gormlog"))
 	//db.DB().SetMaxOpenConns(20000)
 	db.DB().SetMaxIdleConns(0)
 }
@@ -110,7 +109,17 @@ func (d *Database) First(model interface{}, where string) error {
 }
 
 func (d *Database) UpdateOrCreate(model interface{}, where interface{}) error {
-	return DB.Writer.Where(where).Assign(model).FirstOrCreate(model).Error
+	err := DB.Writer.Where(where).First(where).Error
+
+	if err != nil {
+		err = DB.Writer.Create(&model).Error
+	} else {
+		err = DB.Writer.Model(where).Updates(model).Error
+	}
+
+	return err
+
+	//return DB.Writer.Where(where).Assign(model).FirstOrCreate(where).Error
 }
 
 func (d *Database) Count(model interface{}, where string) uint64 {
@@ -133,7 +142,7 @@ func (d *Database) Count(model interface{}, where string) uint64 {
 
 type PaginateQuery struct {
 	Model interface{}
-	Result interface{}
+	Result interface{} // must be a address
 	Limit uint64
 	Page uint64
 	Where string
@@ -147,6 +156,10 @@ func (d *Database) Paginate(query PaginateQuery) (uint64, error) {
 	var err error
 	total = 0
 	offset := (query.Limit) * (query.Page - 1)
+
+	if query.Order == "" {
+		query.Order = "id desc"
+	}
 
 	if query.Where != "" {
 		err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Count(&total).Error
