@@ -142,10 +142,11 @@ type PaginateQuery struct {
 	Model interface{}
 	Result interface{} // must be a address
 	Limit uint64
-	Page uint64
+	Offset uint64
 	Where string
 	Fields string
 	Order string
+	Group string
 	Preloads map[string]interface{} // 预加载项
 }
 
@@ -154,7 +155,6 @@ func (d *Database) Paginate(query PaginateQuery) (uint64, error) {
 	var total uint64
 	var err error
 	total = 0
-	offset := (query.Limit) * (query.Page - 1)
 
 	if query.Order == "" {
 		query.Order = "id desc"
@@ -163,27 +163,27 @@ func (d *Database) Paginate(query PaginateQuery) (uint64, error) {
 	if query.Where != "" {
 		if len(query.Preloads) == 0 {
 			err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Count(&total).Error
-			err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Limit(query.Limit).Offset(offset).Order(query.Order).Find(query.Result).Error
+			err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Limit(query.Limit).Offset(query.Offset).Order(query.Order).Group(query.Group).Find(query.Result).Error
 		} else {
 			err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Count(&total).Error
 			qu := DB.Reader.Model(query.Model)
 			for key, fun := range query.Preloads {
 				qu = qu.Preload(key, fun)
 			}
-			err = qu.Where(query.Where).Select(query.Fields).Limit(query.Limit).Offset(offset).Order(query.Order).Find(query.Result).Error
+			err = qu.Where(query.Where).Select(query.Fields).Limit(query.Limit).Offset(query.Offset).Order(query.Order).Group(query.Group).Find(query.Result).Error
 		}
 		
 	} else {
 		if len(query.Preloads) == 0 {
 			err = DB.Reader.Model(query.Model).Select(query.Fields).Count(&total).Error
-			err = DB.Reader.Model(query.Model).Select(query.Fields).Limit(query.Limit).Offset(offset).Order(query.Order).Find(query.Result).Error
+			err = DB.Reader.Model(query.Model).Select(query.Fields).Limit(query.Limit).Offset(query.Offset).Order(query.Order).Group(query.Group).Find(query.Result).Error
 		} else {
 			err = DB.Reader.Model(query.Model).Where(query.Where).Select(query.Fields).Count(&total).Error
 			qu := DB.Reader.Model(query.Model)
 			for key, fun := range query.Preloads {
 				qu = qu.Preload(key, fun)
 			}
-			err = qu.Where(query.Where).Select(query.Fields).Limit(query.Limit).Offset(offset).Order(query.Order).Find(query.Result).Error
+			err = qu.Where(query.Where).Select(query.Fields).Limit(query.Limit).Offset(query.Offset).Order(query.Order).Group(query.Group).Find(query.Result).Error
 		}
 	}
 	return total, err
